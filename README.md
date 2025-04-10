@@ -19,11 +19,48 @@ The CI/CD pipeline includes the following stages:
 11. **Kubernetes Interaction**: Deploys application to EKS cluster
 12. **Verify Deployment**: Verifies successful deployment
 
+## Maven Configuration for Nexus Integration
+
+To enable artifact publishing to Nexus, the project's `pom.xml` must include:
+
+```xml
+<distributionManagement>
+    <repository>
+        <id>nexus-releases</id>
+        <url>http://your-nexus-url/repository/maven-releases/</url>
+    </repository>
+    <snapshotRepository>
+        <id>nexus-snapshots</id>
+        <url>http://your-nexus-url/repository/maven-snapshots/</url>
+    </snapshotRepository>
+</distributionManagement>
+```
+
+Additionally, ensure your Maven `settings.xml` has the corresponding server credentials:
+
+```xml
+<servers>
+    <server>
+        <id>nexus-releases</id>
+        <username>your-username</username>
+        <password>your-password</password>
+    </server>
+    <server>
+        <id>nexus-snapshots</id>
+        <username>your-username</username>
+        <password>your-password</password>
+    </server>
+</servers>
+```
+
 ## Infrastructure as Code with Terraform
 
 Our EKS cluster and related infrastructure are provisioned using Terraform. The project structure includes:
 
-- `main.tf & variable.tf`: Contains the core infrastructure configuration, including VPC and EKS cluster setup
+- `main.tf`: Contains the core infrastructure configuration, including VPC and EKS cluster setup
+- `variables.tf`: Defines input variables for the Terraform configuration
+- `output.tf`: Specifies outputs like cluster endpoint and certificate information
+- `sec.yaml`: Security-related configurations for Kubernetes
 
 ### Terraform Configuration
 
@@ -48,7 +85,7 @@ These configurations ensure that Jenkins has the necessary permissions to deploy
 
 The pipeline uses the Jenkins Kubernetes plugin to interact with the EKS cluster. The authentication is handled through the AWS credentials configured in Jenkins, and the deployment process respects the RBAC permissions set up for the Jenkins service account.
 
-## Deployment Process
+### Deployment Process
 
 1. Jenkins builds and tests the application
 2. Security scanning is performed on both the code and Docker image
@@ -59,6 +96,12 @@ The pipeline uses the Jenkins Kubernetes plugin to interact with the EKS cluster
 
 ## Troubleshooting
 
+### Maven/Nexus Issues
+
+- Verify the `distributionManagement` section in `pom.xml` is correctly configured
+- Check that Maven `settings.xml` has the proper Nexus credentials
+- Ensure Nexus repositories exist and are accessible from the Jenkins server
+
 ### Docker Push Errors
 
 - Verify Docker Hub credentials in Jenkins
@@ -67,8 +110,8 @@ The pipeline uses the Jenkins Kubernetes plugin to interact with the EKS cluster
 ### EKS Connection Issues
 
 - Verify that IAM permissions are correctly configured
-- Check that the aws-auth ConfigMap includes Jenkins user
-- Ensure kubectl is properly configured in Jenkins
+- Check that the `aws-auth` ConfigMap includes Jenkins user
+- Ensure `kubectl` is properly configured in Jenkins
 
 ### Terraform-Related Issues
 
@@ -77,16 +120,34 @@ The pipeline uses the Jenkins Kubernetes plugin to interact with the EKS cluster
 
 ## Repository Structure
 
-- `src/`: Application source code
-- `Jenkinsfile`: Jenkins pipeline definition
-- `ds.yml`: Kubernetes deployment manifests
-- `Dockerfile`: Container image definition
-- Terraform files:
-  - `main.tf`: Main infrastructure definition (VPC, EKS)
-  - `variables.tf`: Input variables for Terraform
-  - `output.tf`: Output values after infrastructure creation
-- RBAC configuration:
-  - `ServiceAccount.yaml`: Jenkins service account
-  - `role.yaml`: Role definition with permissions
-  - `role-binding.yaml`: Role binding to service account
-  - `sec.yaml`: Security configuration
+```
+src/                    # Application source code
+pom.xml                 # Maven project configuration with Nexus distribution management
+Jenkinsfile             # Jenkins pipeline definition
+ds.yml                  # Kubernetes deployment manifests
+Dockerfile              # Container image definition
+
+# Terraform files
+main.tf                 # Main infrastructure definition (VPC, EKS)
+variables.tf            # Input variables for Terraform
+output.tf               # Output values after infrastructure creation
+
+# RBAC configuration
+ServiceAccount.yaml     # Jenkins service account
+role.yaml               # Role definition with permissions
+role-binding.yaml       # Role binding to service account
+sec.yaml                # Security configuration
+```
+
+## Getting Started
+
+1. Clone the repository
+2. Configure your Jenkins server with the necessary plugins and credentials
+3. Set up your Nexus repository and update the URLs in `pom.xml`
+4. Configure AWS credentials in Jenkins
+5. Run the pipeline
+
+```
+
+This README provides a comprehensive overview of your banking application's CI/CD pipeline while maintaining good structure and readability. You may want to adjust the specific URLs, credentials references, or add more detailed setup instructions as needed for your particular environment.
+```
