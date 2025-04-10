@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jenkins-rolebinding
+  namespace: webapps
+subjects:
+- kind: ServiceAccount
+  name: jenkins
+  namespace: webapps  # ensure this matches Jenkins' namespace
+roleRef:
+  kind: Role
+  name: app-role
+  apiGroup: rbac.authorization.k8s.io
